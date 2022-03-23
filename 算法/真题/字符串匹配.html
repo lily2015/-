@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字符串匹配-字节飞书</title>
+</head>
+<body>
+<div>
+  小歪每次会给你两个字符串：笔记s1和关键词s2，请求你写一个函数判断s2的排列之一是否是s1的子串如果是，返回true否则，返回false。
+</div>
+
+<div style="padding: 20px 0">
+  思路：
+    因为是s2的排列之一，所以认为s2字符的统计个数应该跟s1中的某段字符的统计个数保持一致
+    所s2的字符map表的个字符总量，应该跟匹配的s1中的某段字符串map和一样。
+    如果遇到非s2 map表的字符，且没有匹配上，那应该把s2的map表变为初始状态，继续在s1上比对
+</div>
+
+<script>
+  function isMatch(s1, s2) {
+    if (s1.length < s2.length) return false
+    var s2Map = {}, s2All = s2.length;
+    s2.split('').map(itm => {
+      s2Map[itm] = s2Map.hasOwnProperty(itm) ? s2Map[itm] + 1 : 1
+    })
+
+    var s1Arr = s1.split('')
+    for (const itm of s1Arr) {
+      if (s2Map.hasOwnProperty(itm)) {
+        s2All--;
+      } else {
+        s2All = s2.length;
+      }
+      if (s2All === 0) return true
+    }
+    return false
+  }
+
+  var [s1, s2] = ['facfbdbacb', 'abbc']
+  console.log('@@@', isMatch(s1, s2))
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>切豆腐——美团</title>
+</head>
+<body>
+  
+<div>
+有一块10000*10000的立方体豆腐，豆腐的前左下角放在(0,0,0)点，豆腐的后右上角放在(10000, 10000, 10000)点，下面给出切法的数据结构
+[a, b]
+a = 1，表示x = b处，一把无穷大的刀平行于yz面贯穿豆腐切过去
+a = 2，表示y = b处，一把无穷大的刀平行于xz面贯穿豆腐切过去
+a = 3，表示z = b处，一把无穷大的刀平行于xy面贯穿豆腐切过去
+a = 1 or 2 or 3, 0 <= b <= 10000
+给定一个n*2的二维数组，表示切了n刀， n <= 10的5次方，返回豆腐中最大的一块体积是多少？
+</div>
+
+<div style="padding: 20px 0">
+思路：
+  找到x之间最大差、y之间最大差、z之间最大差值
+</div>
+
+<script>
+  /**
+   * 默认地，sort() 函数按照字符串顺序对值进行排序。
+   * 该函数很适合字符串（"Apple" 会排在 "Banana" 之前）。
+   * 不过，如果数字按照字符串来排序，则 "25" 大于 "100"，因为 "2" 大于 "1"。
+   * 正因如此，sort() 方法在对数值排序时会产生不正确的结果。
+   * 我们通过一个比值函数来修正此问题
+   * arr.sort((a, b) => a - b)
+  */
+  function getMaxVolume(arr) {
+    var abc = [[0, 10000],[0, 10000],[0, 10000]]
+    arr.forEach(itm => {
+      abc[itm[0] - 1].push(itm[1])
+    });
+    var getMaxGap = (numArr) => {
+      if(numArr.length<2) return numArr[0]
+
+        numArr.sort((a,b)=>a-b)
+        let max = numArr[1] - numArr[0]
+        for (var i = 0; i < numArr.length - 1; i++) {
+          max = Math.max(max, numArr[i + 1] - numArr[i])
+        }
+        return max
+    }
+
+    var a = getMaxGap(abc[0])
+    var b = getMaxGap(abc[1])
+    var c = getMaxGap(abc[2])
+
+    // console.log(a, b, c)
+    return a*b*c
+  }
+
+  var arr = [[1,100], [2, 10], [3, 10], [1, 103], [1, 1000], [2, 1003]]
+  console.log(getMaxVolume(arr))
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div>
+    <input type="file" multiple id="file_input" accept=".jpg,.png">
+    <button id="upload">上传</button>
+  </div>
+
+  <script>
+    function requestLimit(limit) {
+      this.requestCount = 0;
+      this.limit = limit || 2;
+      this.unRequestFn = [];
+    }
+    requestLimit.prototype.request = async function (fn) {
+      if (this.requestCount >= this.limit) {
+        await new Promise(resolve => this.unRequestFn.push(resolve))
+      }
+      return this.requestHandle(fn);
+    }
+    requestLimit.prototype.requestHandle = async function (fn) {
+      this.requestCount++;
+      try {
+        if (fn) {
+          return await fn();
+        }
+      } catch(err) {
+        return Promise.reject(err)
+      } finally {
+        this.requestCount--;
+        if(this.unRequestFn.length) {
+          this.unRequestFn[0]();
+          this.unRequestFn.shift();
+        }
+      }
+    }
+
+    // function uploadFile (file) {
+    //   this.file = file;
+    // }
+
+    function upload(file) {
+      var time = Math.random()*10000;
+      new Promise(resolve => {
+        setTimeout(() => {
+          resolve(`${file.name}上传完毕, 用时${(time / 1000).toFixed(2)}秒`);
+        }, 2000)
+      }).then(res => {
+        console.log(res)
+      })
+    }
+
+    
+    function batchUploadFile (list, max) {
+      var reqLimit = new requestLimit(max);
+      for (let i=0; i<list.length; i++) {
+        reqLimit.request(upload(list[i]))
+      }
+      
+    }
+
+    var btnUpload = document.getElementById('upload');
+    var files = document.getElementById('file_input');
+
+    files.addEventListener('change', function(e) {
+      var filesList = e.target.files;
+      btnUpload.addEventListener('click', function() {
+        batchUploadFile(filesList, 2)
+      })
+    })
+    
+  </script>
+</body>
+</html>

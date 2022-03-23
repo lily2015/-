@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>防抖</title>
+</head>
+<body>
+  <input type="text" id="iptText">
+
+  <script>
+    function debounce(delay, callback) {
+      var timer;
+      return function(val) {
+        clearTimeout(timer);
+        timer = setTimeout(function() {
+          return callback(val);
+        }, delay)
+      }
+    }
+
+    function cbFn(val) {
+      console.log("====", val)
+    }
+
+    var iptDebounce = debounce(1000, cbFn)
+    var ipt = document.getElementById('iptText');
+    ipt.addEventListener('keyup', function(e) {
+      iptDebounce(e.target.value)
+    })
+  </script>
+</body>
+</html>

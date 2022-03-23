@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div>
+    <input type="file" multiple id="file_input" accept=".jpg,.png">
+    <button id="upload">上传</button>
+  </div>
+
+  <script>
+    function delay(interval) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(interval)
+        }, interval)
+      })
+    }
+    let tasks= [
+      () => delay(6000),
+      () => delay(2000),
+      () => delay(1500),
+      () => delay(1400),
+      () => delay(1303),
+      () => delay(1000),
+      () => delay(1300),
+    ]
+    function createRequest(tasks, pool, callback) {
+      pool = pool || 5;    
+      class TaskQueue {
+        running = 0;
+        queue = [];
+        results = [];
+
+        pushTask(task) {
+          let self = this;
+          self.queue.push(task);
+          self.next();
+        }
+        // 发请求管控
+        next() {
+          let self = this;
+          while(self.running < pool && self.queue.length) {
+            self.running++;
+            let task = self.queue.shift();
+
+            console.log("task==", task)
+            
+            task().then(result => {
+              console.log("==", result)
+              self.results.push(result);
+            }).finally(() => {
+              self.running--;
+              self.next();
+            });
+          }
+          if (self.running === 0) callback(self.results);
+        }
+      }
+      let tQueue = new TaskQueue;
+      tasks.forEach(task => tQueue.pushTask(task));
+    }
+    createRequest(tasks, 2, result => {
+      // 成功几个存储几个
+      console.log(result)
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>节流</title>
+</head>
+<body>
+  <button id="btn">点击</button>
+
+  <script>
+    // for (var i = 0; i < 3; ++i) {
+    //   document.getElementById('btn').addEventListener('click', function() {
+    //     console.log(i);
+    //   });
+    // }
+    function throttle(wait, callback) {
+      let timerOut;
+      return function() {
+        if (!timerOut) {
+          timerOut = setTimeout(function() {
+            callback();
+            timerOut = null
+          }, wait);
+        }
+      }
+    }
+
+    function handleCallBack() {
+      console.log(`执行了一次`);
+    }
+    document.getElementById('btn').onclick = throttle(2000, handleCallBack)
+  </script>
+</body>
+</html>

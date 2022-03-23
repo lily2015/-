@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>手写Promise</title>
+</head>
+<body>
+
+<a href="https://www.cnblogs.com/sugar-tomato/p/11353546.html">手写Promise</a>
+<script>
+  function resolvePromise(promise2, x, resolve, reject){
+    // 循环引用报错
+    if(x === promise2){
+      // reject报错
+      return reject(new TypeError('Chaining cycle detected for promise'));
+    }
+    // 防止多次调用
+    let called;
+    // x不是null 且x是对象或者函数
+    if (x != null && (typeof x === 'object' || typeof x === 'function')) {
+      try {
+        // A+规定，声明then = x的then方法
+        let then = x.then;
+        // 如果then是函数，就默认是promise了
+        if (typeof then === 'function') { 
+          // 就让then执行 第一个参数是this   后面是成功的回调 和 失败的回调
+          then.call(x, y => {
+            // 成功和失败只能调用一个
+            if (called) return;
+            called = true;
+            // resolve的结果依旧是promise 那就继续解析
+            resolvePromise(promise2, y, resolve, reject);
+          }, err => {
+            // 成功和失败只能调用一个
+            if (called) return;
+            called = true;
+            reject(err);// 失败了就失败了
+          })
+        } else {
+          resolve(x); // 直接成功即可
+        }
+      } catch (e) {
+        // 也属于失败
+        if (called) return;
+        called = true;
+        // 取then出错了那就不要在继续执行了
+        reject(e); 
+      }
+    } else {
+      resolve(x);
+    }
+  }
+
+  class Promise {
+    constructor(executor) {
+      this.state = 'pendding'
+      this.value = undefined
+      this.reason = ''
+      this.onResolvedCallbacks = []
+      this.onRejectedCallbacks = []
+
+      let resolved = (value) => {
+        if (this.state === 'pendding') {
+          this.state = 'fulfilled'
+          this.value = value
+          this.onResolvedCallbacks.forEach(fn=>fn());
+        }
+      }
+      let rejected = (reason) => {
+        if (this.state === 'pendding') {
+          this.state = 'rejected'
+          this.reason = reason
+          this.onRejectedCallbacks.forEach(fn=>fn());
+        }
+      }
+
+      try {
+        executor(resolved, rejected)
+      } catch (err) {
+        rejected(err)
+      }
+    }
+
+    then (onFulfilled, onRejected) {
+      onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : value => value
+      onRejected = typeof onRejected === 'function' ? onRejected : err => {throw err}
+
+      let promise2 = new Promise((resolved, rejected) => {
+        if (this.state === 'fulfilled') {
+          setTimeout(() => {
+            try {
+              let x = onFulfilled(this.value);
+              resolvePromise(promise2, x, resolve, reject);
+            } catch (e) {
+              reject(e);
+            }
+          }, 0);
+        }
+
+        if (this.state === 'rejected') {
+          setTimeout(() => {
+            try {
+              let x = onRejected(this.reason)
+              resolvePromise(promise2, x, resolve, reject)
+            } catch (e) {
+              reject(e)
+            }
+          }, 0)
+        }
+
+        if (this.state === 'pendding') {
+          this.onResolvedCallbacks.push(() => {
+            let x = onFulfilled(this.value)
+            resolvePromise(promise2, x, resolve, reject)
+          })
+
+          this.onRejectedCallbacks.push(() => {
+            let x = onRejected(this.reason)
+            resolvePromise(promise2, x, resolve, reject)
+          })
+        }
+      })
+      return promise2
+    }
+  }
+</script>
+</body>
+</html>
